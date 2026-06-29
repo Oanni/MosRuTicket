@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: mosru-ticket-bot
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python main.py
+    envVars:
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: CHECK_INTERVAL
+        value: "60"
+      - key: BOOKING_WINDOW_DAYS
+        value: "3"
+      - key: PYTHON_VERSION
+        value: "3.12.0"
