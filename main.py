@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import os
 import sys
 
+from aiohttp import web
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
@@ -20,6 +22,22 @@ logging.basicConfig(
     stream=sys.stdout,
 )
 logger = logging.getLogger(__name__)
+
+
+async def health_handler(_request: web.Request) -> web.Response:
+    return web.Response(text="ok")
+
+
+async def run_health_server() -> None:
+    port = int(os.getenv("PORT", "8080"))
+    app = web.Application()
+    app.router.add_get("/", health_handler)
+    app.router.add_get("/health", health_handler)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, "0.0.0.0", port)
+    await site.start()
+    logger.info("Health server listening on port %s", port)
 
 
 async def main() -> None:
@@ -42,6 +60,7 @@ async def main() -> None:
 
     try:
         await asyncio.gather(
+            run_health_server(),
             dp.start_polling(bot),
             monitor.run_forever(),
         )
